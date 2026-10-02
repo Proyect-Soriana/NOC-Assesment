@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TORUS — Assessment NOC Avanzado</title>
+<style>
+:root{--navy:#002060;--red:#C00000;--grn:#196B24;--blu:#0F9ED5;--amb:#E97132;--pur:#7030A0;--tel:#028090;--gold:#B8860B;--bg:#F4F6F9;--card:#fff;--txt:#1a1a2e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column}
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap');
+
+/* ── Header ── */
+.hdr{background:linear-gradient(135deg,var(--navy) 70%,#0d3280);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 12px rgba(0,0,0,.35)}
+.hdr-logo{font-family:'Barlow Condensed',sans-serif;font-size:1.7rem;font-weight:700;letter-spacing:1px}
+.hdr-logo span{color:var(--blu)}
+.hdr-sub{font-size:.8rem;opacity:.7;margin-top:2px}
+.hdr-badge{margin-left:auto;background:rgba(15,158,213,.25);border:1px solid var(--blu);border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:600}
+
+/* ── Screens ── */
+.screen{display:none;flex:1;align-items:center;justify-content:center;padding:24px}
+.screen.active{display:flex;flex-direction:column}
+
+/* ── Landing ── */
+.landing-card{background:var(--card);border-radius:12px;box-shadow:0 4px 24px rgba(0,32,96,.12);padding:36px 40px;max-width:520px;width:100%}
+.landing-card h2{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;color:var(--navy);margin-bottom:6px}
+.landing-card p{font-size:.9rem;color:#555;margin-bottom:22px;line-height:1.5}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+.info-box{background:var(--bg);border-radius:8px;padding:12px;text-align:center}
+.info-box .ib-val{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:700;color:var(--navy)}
+.info-box .ib-lbl{font-size:.73rem;color:#777;margin-top:2px}
+label{display:block;font-size:.82rem;font-weight:600;color:var(--navy);margin-bottom:4px}
+input,select{width:100%;padding:10px 12px;border:1.5px solid #d0d7e8;border-radius:7px;font-size:.9rem;font-family:'Barlow',sans-serif;margin-bottom:14px;outline:none;transition:border .2s}
+input:focus,select:focus{border-color:var(--blu)}
+.disclaimer{font-size:.75rem;color:#888;margin-top:12px;line-height:1.4;border-top:1px solid #eee;padding-top:10px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 24px;border:none;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-primary:hover{background:#002e7a}
+.btn-primary:disabled{background:#9aa;cursor:not-allowed}
+.btn-sec{background:#eef0f5;color:var(--navy)}
+.btn-sec:hover{background:#dde2ee}
+.btn-danger{background:var(--red);color:#fff}
+.btn-success{background:var(--grn);color:#fff}
+.btn-full{width:100%;justify-content:center}
+.btn-sm{padding:7px 14px;font-size:.85rem}
+
+/* ── Question screen ── */
+.exam-wrap{max-width:700px;width:100%}
+.exam-header{background:var(--card);border-radius:10px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.progress-bar-wrap{flex:1;height:8px;background:#dde2ee;border-radius:4px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--blu),var(--grn));border-radius:4px;transition:width .4s}
+.timer{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:700;color:var(--navy);white-space:nowrap}
+.timer.warning{color:var(--amb)}
+.timer.critical{color:var(--red);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.q-counter{font-size:.8rem;color:#777;white-space:nowrap}
+.q-card{background:var(--card);border-radius:12px;box-shadow:0 3px 16px rgba(0,32,96,.1);padding:28px 32px}
+.q-cat{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;background:#eef3ff;color:var(--navy);margin-bottom:12px;letter-spacing:.3px}
+.q-text{font-size:1rem;font-weight:500;line-height:1.55;margin-bottom:20px;color:var(--txt)}
+.q-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.q-opt{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border:2px solid #dde2ee;border-radius:9px;cursor:pointer;transition:all .18s}
+.q-opt:hover{border-color:var(--blu);background:#f0f8ff}
+.q-opt.selected{border-color:var(--navy);background:#eef3ff}
+.opt-letter{width:28px;height:28px;border-radius:6px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.9rem;color:var(--navy);flex-shrink:0}
+.q-opt.selected .opt-letter{background:var(--navy);color:#fff}
+.opt-text{font-size:.9rem;line-height:1.45;padding-top:3px}
+.q-nav{display:flex;gap:10px;justify-content:space-between;align-items:center}
+.dot-nav{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.dot{width:10px;height:10px;border-radius:50%;background:#dde2ee;cursor:pointer;transition:background .2s}
+.dot.answered{background:var(--navy)}
+.dot.current{background:var(--blu);transform:scale(1.3)}
+
+/* ── Confirm screen ── */
+.confirm-card{background:var(--card);border-radius:12px;box-shadow:0 4px 24px rgba(0,32,96,.12);padding:44px 40px;max-width:480px;width:100%;text-align:center}
+.confirm-icon{font-size:3.5rem;margin-bottom:16px}
+.confirm-card h2{font-family:'Barlow Condensed',sans-serif;font-size:1.7rem;color:var(--grn);margin-bottom:8px}
+.confirm-card p{font-size:.9rem;color:#555;line-height:1.55;margin-bottom:12px}
+.folio-box{background:var(--bg);border-radius:8px;padding:14px;margin:20px 0;font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:700;color:var(--navy);letter-spacing:1px}
+.folio-lbl{font-size:.72rem;color:#888;margin-bottom:4px;font-family:'Barlow',sans-serif;font-weight:400}
+
+/* ── Admin panel ── */
+.admin-wrap{max-width:960px;width:100%;padding:0 16px}
+.admin-header{background:linear-gradient(135deg,var(--navy),#0d3280);color:#fff;border-radius:12px;padding:20px 28px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
+.admin-header h2{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem}
+.admin-header .admin-badge{background:var(--red);padding:3px 10px;border-radius:5px;font-size:.72rem;font-weight:700;margin-left:8px}
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+.astat{background:var(--card);border-radius:9px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.astat-val{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:700;color:var(--navy)}
+.astat-lbl{font-size:.72rem;color:#888;margin-top:2px}
+.results-table-wrap{background:var(--card);border-radius:12px;box-shadow:0 3px 16px rgba(0,32,96,.1);overflow:hidden;margin-bottom:16px}
+.results-table-wrap h3{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;padding:16px 20px;border-bottom:1px solid #eee;color:var(--navy)}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{background:#f4f6f9;padding:10px 12px;text-align:left;font-weight:600;color:var(--navy);font-size:.78rem;border-bottom:2px solid #dde2ee}
+td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+tr:hover td{background:#fafbff}
+.badge-score{display:inline-block;padding:3px 9px;border-radius:5px;font-weight:700;font-size:.8rem}
+.score-high{background:#dcf5e4;color:#196B24}
+.score-mid{background:#fff3cd;color:#856404}
+.score-low{background:#fde;color:#C00000}
+.gap-tag{display:inline-block;background:#fde;color:var(--red);font-size:.7rem;padding:2px 6px;border-radius:4px;margin:1px}
+.admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.empty-state{text-align:center;padding:40px;color:#aaa;font-size:.9rem}
+
+/* ── Login ── */
+.login-card{background:var(--card);border-radius:12px;box-shadow:0 4px 24px rgba(0,32,96,.14);padding:36px 40px;max-width:400px;width:100%;text-align:center}
+.login-card h2{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;color:var(--navy);margin-bottom:6px}
+.login-card p{font-size:.82rem;color:#888;margin-bottom:22px}
+.login-error{background:#fde;color:var(--red);border-radius:6px;padding:8px 12px;font-size:.82rem;margin-bottom:14px;display:none}
+
+/* ── Timeout ── */
+.timeout-card{background:var(--card);border-radius:12px;box-shadow:0 4px 24px rgba(0,32,96,.12);padding:44px 40px;max-width:480px;width:100%;text-align:center}
+.timeout-card h2{font-family:'Barlow Condensed',sans-serif;font-size:1.7rem;color:var(--amb)}
+
+/* ── Sending overlay ── */
+.overlay{position:fixed;inset:0;background:rgba(0,32,96,.45);display:none;align-items:center;justify-content:center;z-index:999}
+.overlay.active{display:flex}
+.overlay-box{background:#fff;border-radius:12px;padding:32px 40px;text-align:center;max-width:340px}
+.spinner{width:44px;height:44px;border:4px solid #dde;border-top-color:var(--blu);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <div class="hdr-logo">TOR<span>US</span></div>
+    <div class="hdr-sub">Torre de Operación y Respuesta Unificada de Servicios TI</div>
+  </div>
+  <div class="hdr-badge" id="hdrBadge">🎯 Assessment NOC Avanzado</div>
+</div>
+
+<!-- OVERLAY SENDING -->
+<div class="overlay" id="overlay">
+  <div class="overlay-box">
+    <div class="spinner"></div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:600;color:var(--navy)">Enviando resultados…</div>
+    <div style="font-size:.82rem;color:#888;margin-top:6px">Por favor no cierres esta ventana</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 1 — LANDING
+════════════════════════════════════════ -->
+<div class="screen active" id="scLanding">
+  <div class="landing-card">
+    <h2>📋 Assessment NOC Avanzado</h2>
+    <p>Este examen evalúa los conocimientos necesarios para operar en el <strong>NOC Avanzado TORUS</strong>. Lee cuidadosamente cada pregunta antes de responder.</p>
+    <div class="info-grid">
+      <div class="info-box"><div class="ib-val">20</div><div class="ib-lbl">Preguntas</div></div>
+      <div class="info-box"><div class="ib-val">40 min</div><div class="ib-lbl">Tiempo límite</div></div>
+      <div class="info-box"><div class="ib-val">7</div><div class="ib-lbl">Categorías</div></div>
+      <div class="info-box"><div class="ib-val">0–10</div><div class="ib-lbl">Escala</div></div>
+    </div>
+    <div id="landErr" style="background:#fde;color:var(--red);border-radius:6px;padding:8px 12px;font-size:.82rem;margin-bottom:14px;display:none"></div>
+    <label for="inNombre">Nombre completo *</label>
+    <input type="text" id="inNombre" placeholder="Ej. Juan Pérez García" autocomplete="off">
+    <label for="inPuesto">Puesto actual *</label>
+    <select id="inPuesto">
+      <option value="">— Selecciona —</option>
+      <option>Analista NOC Jr</option>
+      <option>Analista NOC Sr</option>
+      <option>NOC Lead / Supervisor</option>
+      <option>Técnico de Soporte</option>
+      <option>Administrador de Sistemas</option>
+      <option>Administrador de Redes</option>
+      <option>Otro</option>
+    </select>
+    <button class="btn btn-primary btn-full" onclick="startExam()">▶ Iniciar examen</button>
+    <div class="disclaimer">🔒 Tus respuestas se registran de forma confidencial. Los resultados <strong>no</strong> se muestran al candidato. Solo el equipo de TI Soriana tiene acceso a los puntajes. Al iniciar aceptas las condiciones del proceso de evaluación.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 2 — QUESTION
+════════════════════════════════════════ -->
+<div class="screen" id="scExam">
+  <div class="exam-wrap">
+    <div class="exam-header">
+      <span class="q-counter" id="qCounter">1 / 20</span>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+      <span class="timer" id="timerDisplay">40:00</span>
+    </div>
+    <div class="q-card">
+      <span class="q-cat" id="qCat">ITIL</span>
+      <div class="q-text" id="qText">Cargando pregunta…</div>
+      <div class="q-options" id="qOptions"></div>
+      <div class="dot-nav" id="dotNav"></div>
+      <div class="q-nav" style="margin-top:14px">
+        <button class="btn btn-sec btn-sm" onclick="navQ(-1)" id="btnPrev">← Anterior</button>
+        <button class="btn btn-primary btn-sm" onclick="navQ(1)" id="btnNext">Siguiente →</button>
+        <button class="btn btn-success btn-sm" onclick="confirmSubmit()" id="btnFinish" style="display:none">✔ Finalizar examen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 3 — CONFIRMATION
+════════════════════════════════════════ -->
+<div class="screen" id="scConfirm">
+  <div class="confirm-card">
+    <div class="confirm-icon">✅</div>
+    <h2>Examen enviado correctamente</h2>
+    <p>Tu examen ha sido registrado exitosamente. El equipo de <strong>TI Soriana</strong> revisará los resultados y te notificará los próximos pasos del proceso.</p>
+    <div class="folio-box"><div class="folio-lbl">FOLIO DE REGISTRO</div><span id="confirmFolio">TORUS-NOC-2026-0000</span></div>
+    <p style="font-size:.78rem;color:#aaa">Guarda este folio para cualquier consulta sobre tu evaluación. No compartas este código.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 4 — TIMEOUT
+════════════════════════════════════════ -->
+<div class="screen" id="scTimeout">
+  <div class="timeout-card">
+    <div style="font-size:3rem;margin-bottom:14px">⏱</div>
+    <h2>Tiempo agotado</h2>
+    <p style="color:#555;margin-top:10px;margin-bottom:20px;font-size:.9rem;line-height:1.5">El tiempo del examen ha terminado. Tus respuestas han sido enviadas automáticamente con las preguntas contestadas hasta el momento.</p>
+    <div class="folio-box"><div class="folio-lbl">FOLIO DE REGISTRO</div><span id="timeoutFolio">TORUS-NOC-2026-0000</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 5 — ADMIN LOGIN
+════════════════════════════════════════ -->
+<div class="screen" id="scAdminLogin">
+  <div class="login-card">
+    <div style="font-size:2rem;margin-bottom:10px">🔐</div>
+    <h2>Panel de Administración</h2>
+    <p>Acceso restringido — Solo personal autorizado TI Soriana</p>
+    <div class="login-error" id="loginErr">Contraseña incorrecta. Intenta de nuevo.</div>
+    <label for="adminPass">Contraseña</label>
+    <input type="password" id="adminPass" placeholder="••••••••••" onkeydown="if(event.key==='Enter')adminLogin()">
+    <button class="btn btn-primary btn-full" onclick="adminLogin()" style="margin-top:6px">Acceder</button>
+    <div style="font-size:.75rem;color:#aaa;margin-top:14px">TORUS Assessment System v1.0</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 6 — ADMIN PANEL
+════════════════════════════════════════ -->
+<div class="screen" id="scAdmin">
+  <div class="admin-wrap">
+    <div class="admin-header">
+      <div>
+        <h2>📊 Panel de Resultados <span class="admin-badge">ADMIN</span></h2>
+        <div style="font-size:.8rem;opacity:.7;margin-top:3px">Assessment NOC Avanzado — TORUS · Soriana TI</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:10px">
+        <button class="btn btn-sec btn-sm" onclick="refreshAdmin()">🔄 Actualizar</button>
+        <button class="btn btn-danger btn-sm" onclick="adminLogout()">Salir</button>
+      </div>
+    </div>
+    <div class="admin-stats" id="adminStats">
+      <div class="astat"><div class="astat-val" id="stTotal">0</div><div class="astat-lbl">Evaluados</div></div>
+      <div class="astat"><div class="astat-val" id="stAvg">—</div><div class="astat-lbl">Score Promedio</div></div>
+      <div class="astat"><div class="astat-val" id="stHigh">0</div><div class="astat-lbl">≥ 7 (Aprobados)</div></div>
+      <div class="astat"><div class="astat-val" id="stLow">0</div><div class="astat-lbl">< 6 (GAP crítico)</div></div>
+    </div>
+    <div class="admin-actions">
+      <button class="btn btn-primary btn-sm" onclick="exportCSV()">⬇ Exportar CSV</button>
+      <button class="btn btn-sec btn-sm" onclick="clearLocal()" style="color:var(--red)">🗑 Limpiar datos locales</button>
+    </div>
+    <div class="results-table-wrap">
+      <h3>📋 Resultados registrados</h3>
+      <div id="adminTableWrap">
+        <div class="empty-state">No hay resultados registrados aún.</div>
+      </div>
+    </div>
+    <div style="font-size:.72rem;color:#aaa;text-align:center;margin-bottom:24px">
+      ⚠ Los datos mostrados son del almacenamiento local de este navegador. Para el registro completo consulta Google Sheets o el correo jesuscamor@soriana.com.<br>
+      <strong>TORUS Assessment System v1.0</strong> · Datos confidenciales Soriana TI
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   ██████████████  CONFIGURACIÓN  ██████████████
+   Editar estos valores con tus credenciales reales.
+   ════════════════════════════════════════════════════════ */
+const CFG = {
+  
+  ADMIN_HASH: '51962e26edc957a91abaf3591d3bb6f1d87d03ec6c37fc7cc9af7f2067f0164b',
+
+  /* Google Apps Script URL — pegar la URL del Web App aquí */
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbzGCxkDs89YXb4tVJVIo5nr7tTcaNiaKRL_gat7IN8sMgM4nEXR7FuVkjAOua9JCNN2/exec',
+
+  /* EmailJS — crear cuenta en emailjs.com */
+  EMAILJS_PUB_KEY:  'sqQsYzdIT4EaAGo3B',
+  EMAILJS_SVC_ID:   'service_0dv9u0s',
+  EMAILJS_TMPL_ID:  'template_oht7zrd',
+
+  /* Parámetros del examen */
+  DURATION_MIN: 40,
+  Q_PER_EXAM: 20,
+
+  /* Correo que recibe resultados vía EmailJS */
+  RESULT_EMAIL: 'jesuscamor@soriana.com'
+};
+/* ══════════════════════════════════════════════════════════ */
+
+/* ── Banco completo de 40 preguntas ── */
+const BANK = [
+  /* ── ITIL & Procesos (8) ── */
+  {id:1,cat:'ITIL',q:'Según ITIL 4, ¿cuál es la diferencia principal entre un Incidente y un Problema?',
+   opts:['Un Incidente es planificado; un Problema es inesperado','Un Incidente interrumpe el servicio; un Problema es la causa raíz subyacente','Ambos términos son sinónimos en ITIL 4','Un Problema siempre genera múltiples Incidentes simultáneamente'],cor:1},
+  {id:2,cat:'ITIL',q:'¿Qué es un SLA (Service Level Agreement) en gestión de servicios TI?',
+   opts:['Un acuerdo formal entre proveedor y cliente que define niveles mínimos de calidad, disponibilidad y tiempos de resolución','Un reporte mensual de incidentes que se entrega al área de negocio','Una herramienta de software para gestionar tickets de soporte técnico','La lista de usuarios autorizados a abrir tickets de servicio'],cor:0},
+  {id:3,cat:'ITIL',q:'En ITIL, ¿cuál es la diferencia entre un Cambio Estándar y un Cambio de Emergencia?',
+   opts:['No existe diferencia; ambos requieren el mismo proceso de aprobación','Un Cambio Estándar requiere más aprobaciones que uno de Emergencia','Un Cambio Estándar es de bajo riesgo y pre-aprobado; un Cambio de Emergencia requiere aprobación expedita por alto impacto en producción','El Cambio Estándar solo aplica a hardware; el de Emergencia solo a software'],cor:2},
+  {id:4,cat:'ITIL',q:'¿Cuál es el objetivo principal del CSI (Continual Service Improvement) en ITIL?',
+   opts:['Abrir más tickets de servicio para medir la carga de trabajo','Identificar oportunidades de mejora en procesos y servicios mediante análisis de métricas para aumentar eficiencia y calidad','Contratar más personal de soporte para reducir tiempos de respuesta','Renovar el equipo de cómputo de los usuarios cada dos años'],cor:1},
+  {id:5,cat:'ITIL',q:'Un incidente afecta a todo el sistema de punto de venta en las 850 tiendas Soriana, impidiendo procesar ventas. ¿Cuál es su prioridad correcta según ITIL?',
+   opts:['P4 – Baja, ya que puede resolverse en horario de oficina','P3 – Media, ya que el área de negocio puede operar manualmente','P2 – Alta, ya que afecta a muchos usuarios pero el servicio parcialmente funciona','P1 – Crítica, ya que el impacto es total en el servicio de negocio principal'],cor:3},
+  {id:6,cat:'ITIL',q:'¿Para qué sirve un CMDB (Configuration Management Database) en operaciones TI?',
+   opts:['Es una base de datos de contraseñas seguras para los administradores','Es un repositorio que registra los CIs del ambiente TI, sus atributos y relaciones entre ellos, para apoyar gestión de cambios e incidentes','Es el sistema donde los usuarios finales reportan sus problemas de cómputo','Es la herramienta de facturación para los servicios de TI contratados'],cor:1},
+  {id:7,cat:'ITIL',q:'Antes de cerrar formalmente un incidente en el sistema ITSM, ¿cuál es el paso más importante?',
+   opts:['Eliminar el ticket del sistema para liberar espacio en la base de datos','Asignar el ticket al siguiente turno del NOC para que ellos lo cierren','Confirmar con el usuario afectado que el servicio fue restaurado y documentar la solución aplicada en el ticket','Esperar 30 días para verificar que el incidente no se repita antes de cerrarlo'],cor:2},
+  {id:8,cat:'ITIL',q:'¿Qué es un RFC (Request for Change) y cuándo se genera?',
+   opts:['Es una solicitud de nuevos recursos de cómputo para el área de TI','Es un reporte que genera el NOC cuando detecta una anomalía de red','Es el documento que el cliente firma cuando acepta el servicio TI','Es una solicitud formal para modificar cualquier CI del ambiente productivo; se genera antes de realizar cualquier cambio para evaluar riesgo e impacto'],cor:3},
+
+  /* ── Monitoreo & Observabilidad (8) ── */
+  {id:9,cat:'Monitoreo',q:'¿Qué representa el concepto "Three Pillars of Observability"?',
+   opts:['CPU, Memoria y Almacenamiento — los tres recursos críticos de un servidor','Incidentes, Problemas y Cambios — los tres procesos ITIL fundamentales','Logs, Métricas y Trazas (Traces) — los tres tipos de telemetría para diagnosticar sistemas','Zabbix, Dynatrace y Prometheus — las tres herramientas estándar del mercado'],cor:2},
+  {id:10,cat:'Monitoreo',q:'¿Qué es SNMP y cuál es su función principal en monitoreo de red?',
+   opts:['Es un protocolo para cifrar el tráfico de red entre switches y routers','Es un protocolo estándar para recolectar métricas y gestionar dispositivos de red (switches, routers, servidores) de forma remota desde una herramienta de monitoreo','Es un sistema de tickets de incidentes especializado en infraestructura de red','Es una herramienta de visualización de dashboards para el NOC'],cor:1},
+  {id:11,cat:'Monitoreo',q:'¿Cuál es la diferencia entre Monitoreo (Monitoring) y Observabilidad (Observability)?',
+   opts:['No hay diferencia; son términos intercambiables en operaciones TI','El monitoreo es más moderno y avanzado que la observabilidad','El monitoreo te dice "algo está mal"; la observabilidad te permite entender "por qué está mal" al analizar logs, métricas y trazas de forma integrada','La observabilidad solo aplica a sistemas en la nube; el monitoreo es para on-premise'],cor:2},
+  {id:12,cat:'Monitoreo',q:'¿Qué es un "baseline" en el contexto de monitoreo de infraestructura?',
+   opts:['El umbral máximo que un servidor puede alcanzar antes de reiniciarse automáticamente','El nombre del equipo base del turno nocturno del NOC','El comportamiento normal y esperado de un sistema (CPU, memoria, tráfico) establecido históricamente, que sirve como referencia para detectar anomalías','La versión mínima del agente de monitoreo que debe estar instalada en los hosts'],cor:2},
+  {id:13,cat:'Monitoreo',q:'¿Qué monitorea una herramienta APM (Application Performance Monitoring) como Dynatrace?',
+   opts:['Solo el hardware del servidor (CPU, RAM, disco) donde corre la aplicación','Exclusivamente el tráfico de red entre la aplicación y sus usuarios','Solo los errores de código que generan exceptions en producción','El rendimiento completo de la aplicación: tiempos de respuesta, transacciones de usuario, dependencias de servicios, errores y experiencia del usuario final'],cor:3},
+  {id:14,cat:'Monitoreo',q:'¿Qué es el "alert fatigue" y por qué es un problema crítico en el NOC?',
+   opts:['Es el cansancio físico de los analistas por trabajar en turnos nocturnos prolongados','Es cuando las herramientas de monitoreo dejan de enviar alertas por falta de mantenimiento','Es el fenómeno donde el NOC recibe tantas alertas (muchas duplicadas o irrelevantes) que los analistas empiezan a ignorarlas, aumentando el riesgo de perder un incidente real','Es la obsolescencia de los equipos de monitoreo por falta de actualización'],cor:2},
+  {id:15,cat:'Monitoreo',q:'En el diseño de dashboards para el NOC, ¿cuál es la mejor práctica?',
+   opts:['Mostrar todas las métricas disponibles de todos los sistemas para no perder información','Diseñar vistas por audiencia (ejecutivo, operativo, técnico) mostrando solo las métricas accionables con semáforos claros de estado (verde/amarillo/rojo)','Usar únicamente gráficas de línea de tiempo para todas las métricas del sistema','Actualizar los dashboards solo una vez al día para no saturar la red'],cor:1},
+  {id:16,cat:'Monitoreo',q:'¿Qué es el Smartscape de Dynatrace y cuál es su utilidad para el NOC?',
+   opts:['Es el nombre del módulo de facturación de licencias de Dynatrace','Es la interfaz de configuración de agentes en servidores Windows','Es un mapa topológico en tiempo real de todas las dependencias del ambiente (hosts, procesos, servicios, aplicaciones), que permite visualizar el impacto de un incidente en cascada','Es el motor de alertas que envía notificaciones al equipo de operaciones'],cor:2},
+
+  /* ── Redes & Infraestructura (6) ── */
+  {id:17,cat:'Redes',q:'Un host deja de responder a pings pero el puerto 443 del servicio web sigue respondiendo. ¿Qué hipótesis es la más probable?',
+   opts:['El servidor está completamente caído y fuera de línea','El firewall o configuración del host bloquea ICMP (ping) pero permite el tráfico HTTPS','El servicio web está caído pero el sistema operativo sigue activo','El problema es de DNS y el hostname no resuelve correctamente'],cor:1},
+  {id:18,cat:'Redes',q:'¿Para qué sirve una VLAN (Virtual LAN) en la infraestructura de red de una empresa como Soriana?',
+   opts:['Para aumentar la velocidad de Internet de los usuarios en tiendas','Para reemplazar el cableado físico de red por conexiones inalámbricas','Para segmentar lógicamente la red en grupos separados (PDV, Administrativa, IoT), mejorando la seguridad y el rendimiento sin necesidad de hardware adicional','Para conectar las tiendas con el datacenter a través de Internet pública'],cor:2},
+  {id:19,cat:'Redes',q:'¿Cuál es la función de un firewall en comparación con un router en la red de una tienda?',
+   opts:['El router protege la red de ataques externos; el firewall dirige el tráfico entre redes','Son sinónimos; ambos realizan la misma función de enrutamiento','El router conecta dispositivos dentro de la tienda (LAN); el firewall solo funciona en el datacenter','El router dirige el tráfico entre redes; el firewall controla qué tráfico está permitido o bloqueado según reglas de seguridad definidas'],cor:3},
+  {id:20,cat:'Redes',q:'Un analista NOC ejecuta `netstat -an` en un servidor y ve múltiples conexiones en estado TIME_WAIT. ¿Qué indica esto?',
+   opts:['El servidor está infectado con un virus que abre conexiones fantasma','El servidor no tiene conectividad a Internet en este momento','Son conexiones TCP que acaban de cerrarse y están esperando que expire el tiempo de espera del protocolo antes de liberarse; puede indicar alta carga de conexiones si hay demasiadas','El servicio web está detenido y esperando reiniciarse automáticamente'],cor:2},
+  {id:21,cat:'Redes',q:'El NOC recibe tickets de usuarios que no pueden acceder a una aplicación interna. Ping al IP del servidor funciona, pero el nombre no resuelve. ¿Cuál es la causa más probable?',
+   opts:['El servidor de aplicación está caído y debe reiniciarse','El firewall está bloqueando el acceso a la aplicación','Los usuarios no tienen los permisos correctos para acceder a la aplicación','El servidor DNS no está respondiendo o tiene un registro incorrecto para ese hostname, impidiendo la resolución de nombres'],cor:3},
+  {id:22,cat:'Redes',q:'¿Qué es la latencia de red y cómo impacta la experiencia del usuario en una tienda Soriana?',
+   opts:['Es la cantidad de datos que se pueden transferir por segundo entre dos puntos de red','Es el número de dispositivos conectados simultáneamente a un switch de tienda','Es la frecuencia con que el NOC verifica la conectividad de los dispositivos de red','Es el tiempo de retardo en la comunicación entre dos puntos de red; alta latencia en el enlace tienda-datacenter puede provocar lentitud en PDV y mala experiencia del cajero y cliente'],cor:3},
+
+  /* ── Gestión de Incidentes & SLA (6) ── */
+  {id:23,cat:'Incidentes',q:'Un incidente P1 que afecta 50 tiendas Soriana lleva 2 horas abierto. El SLA de resolución es 4 horas. ¿Qué acción debe tomar el NOC Lead?',
+   opts:['Esperar hasta la hora 3.5 antes de escalar para no interrumpir al equipo de ingeniería innecesariamente','Escalar de inmediato al equipo resolvedor y al Service Manager, generar comunicación de status a stakeholders y activar bridge de incidente mayor','Cerrar el ticket y abrir uno nuevo para reiniciar el contador de SLA','Aplicar una solución temporal sin documentar para resolver rápidamente dentro del SLA'],cor:1},
+  {id:24,cat:'Incidentes',q:'¿Qué mide el indicador MTTR (Mean Time To Restore) y por qué es importante para el NOC?',
+   opts:['Mide el tiempo promedio entre dos incidentes consecutivos del mismo tipo','Es el tiempo máximo permitido por el SLA para resolver un incidente P1','Mide el tiempo promedio que tarda el NOC en restaurar un servicio desde que se detecta el incidente; es el KPI principal de la efectividad operativa del equipo','Mide la cantidad promedio de incidentes atendidos por analista por turno'],cor:2},
+  {id:25,cat:'Incidentes',q:'¿Qué es un "war room" o "bridge de incidente" y cuándo se activa?',
+   opts:['Es una reunión mensual de revisión de métricas del NOC con la Dirección','Es el turno nocturno de fin de semana donde se realizan cambios en producción','Es una convocatoria de emergencia en tiempo real con todos los equipos involucrados (NOC, Ingeniería, Negocio, Proveedores) para coordinar la resolución de un incidente mayor P1/P2','Es la sala física del NOC donde se monitorean los sistemas en tiempo real'],cor:2},
+  {id:26,cat:'Incidentes',q:'¿Cuándo debe escalar un analista NOC un incidente al siguiente nivel?',
+   opts:['Solo cuando el usuario afectado llama directamente al analista y pide hablar con el supervisor','Solo después de intentar resolver el incidente durante al menos 4 horas sin éxito','Nunca; el analista NOC debe resolver todos los incidentes por sí mismo para no cargar al equipo de ingeniería','Cuando el incidente supera el tiempo establecido en los SLAs, cuando excede las capacidades técnicas del analista, o cuando el impacto al negocio es alto (P1/P2)'],cor:3},
+  {id:27,cat:'Incidentes',q:'¿Cuál es el objetivo principal de un análisis post-mortem después de un incidente mayor?',
+   opts:['Identificar al responsable del incidente para aplicar medidas disciplinarias','Documentar el tiempo que tardó cada persona en atender el incidente para evaluación de desempeño','Entender la causa raíz del incidente, documentar la cronología, identificar oportunidades de mejora en procesos y controles, y evitar recurrencias sin enfocarse en culpar a personas','Calcular el costo económico del incidente para cargarlo al presupuesto del área responsable'],cor:2},
+  {id:28,cat:'Incidentes',q:'¿Cuál de los siguientes elementos es MENOS relevante incluir en un ticket de incidente al momento de crearlo?',
+   opts:['Descripción del síntoma reportado y el impacto identificado','Hora de detección y sistemas/usuarios afectados','Acciones iniciales tomadas y resultado de cada una','El número de incidentes que ese usuario ha abierto en el pasado no relacionados con el problema actual'],cor:3},
+
+  /* ── Automatización & Scripting (4) ── */
+  {id:29,cat:'Automatización',q:'¿Qué hace el siguiente script bash en un contexto de NOC?\n`for host in $(cat hosts.txt); do ping -c 1 -W 1 $host > /dev/null && echo "$host OK" || echo "$host DOWN"; done`',
+   opts:['Reinicia todos los hosts listados en hosts.txt de forma secuencial','Descarga y ejecuta actualizaciones en cada host de la lista','Verifica conectividad de cada host en la lista con un ping y reporta si está UP o DOWN','Elimina los hosts inalcanzables del archivo hosts.txt automáticamente'],cor:2},
+  {id:30,cat:'Automatización',q:'¿Qué es un runbook automatizado y cuál es su ventaja sobre un runbook manual?',
+   opts:['Es un documento Word con instrucciones paso a paso para resolver incidentes comunes','Es un conjunto de scripts/tareas que ejecutan automáticamente acciones de remediación cuando se detecta una condición específica, reduciendo el tiempo de respuesta y eliminando errores humanos','Es una lista de contactos de escalación organizada por turno y severidad','Es el manual de operación que se entrega a los nuevos analistas del NOC durante su capacitación'],cor:1},
+  {id:31,cat:'Automatización',q:'¿Para qué usaría un analista NOC el servicio cron en Linux en el contexto de operaciones?',
+   opts:['Para monitorear en tiempo real el estado de los servicios del sistema operativo','Para reiniciar automáticamente el sistema operativo cuando detecta errores críticos','Para programar tareas repetitivas de forma automática y periódica, como limpiar logs, generar reportes, o ejecutar verificaciones de salud a intervalos definidos','Para gestionar los procesos y servicios en ejecución en tiempo real en el servidor'],cor:2},
+  {id:32,cat:'Automatización',q:'¿Cuál es la función principal de Ansible en el contexto de automatización de operaciones TI?',
+   opts:['Es una herramienta de monitoreo de infraestructura similar a Zabbix','Es un lenguaje de programación diseñado específicamente para scripting de redes','Es un sistema de tickets de incidentes de código abierto para el NOC','Es una herramienta de automatización de configuración y aprovisionamiento que permite aplicar cambios a múltiples servidores de forma simultánea y controlada usando playbooks YAML'],cor:3},
+
+  /* ── Seguridad Operativa (4) ── */
+  {id:33,cat:'Seguridad',q:'En el NOC detectas que un servidor de PDV genera tráfico inusual de salida hacia una IP desconocida en puerto 4444. ¿Cuál es la acción correcta?',
+   opts:['Ignorar si el servidor de PDV sigue procesando transacciones normalmente','Reiniciar el servidor para detener el tráfico anómalo','Generar incidente de seguridad, aislar el host en la red si es posible, notificar al equipo SecOps y preservar evidencia (logs, capturas de tráfico)','Bloquear la IP destino en el firewall y continuar con el monitoreo normal sin escalar'],cor:2},
+  {id:34,cat:'Seguridad',q:'¿Qué es un Indicador de Compromiso (IoC) en ciberseguridad operativa?',
+   opts:['El porcentaje de disponibilidad comprometido durante un incidente de seguridad','El contrato firmado con el proveedor de seguridad que define las responsabilidades','Un artefacto observable (IP maliciosa, hash de archivo, URL, comportamiento anómalo) que indica con alta probabilidad que un sistema ha sido comprometido o está siendo atacado','La cláusula de penalización en el SLA cuando el proveedor no cumple el nivel de servicio'],cor:2},
+  {id:35,cat:'Seguridad',q:'¿Qué significa el principio de "mínimo privilegio" en seguridad operativa?',
+   opts:['Que los analistas NOC deben tener el menor salario posible para reducir costos','Que los servidores de producción deben tener la mínima capacidad de hardware para ahorrar recursos','Que cada usuario, sistema o proceso debe tener únicamente los permisos estrictamente necesarios para realizar su función, reduciendo la superficie de ataque','Que el NOC solo debe monitorear los sistemas más críticos y dejar sin monitoreo los de baja prioridad'],cor:2},
+  {id:36,cat:'Seguridad',q:'El NOC detecta en el CMDB un dispositivo de red no registrado conectado a la red de backoffice de una tienda. ¿Cuál es el protocolo correcto?',
+   opts:['Desconectar el cable de red del dispositivo inmediatamente sin documentar el hallazgo','Ignorarlo si no genera alertas de rendimiento en los sistemas de monitoreo','Enviar un email al encargado de la tienda para que lo revise cuando pueda','Registrar el hallazgo como incidente de seguridad, notificar a SecOps, documentar MAC, IP y ubicación del dispositivo, y solicitar aislamiento controlado para investigación'],cor:3},
+
+  /* ── AIOps & Conceptos Emergentes (4) ── */
+  {id:37,cat:'AIOps',q:'¿Qué es la "correlación de eventos" en el contexto de AIOps?',
+   opts:['Es la práctica de correlacionar los horarios de los analistas para garantizar cobertura 24×7','Es un proceso manual donde el NOC Lead revisa todos los logs diariamente','Es la capacidad de agrupar automáticamente múltiples alertas relacionadas en un único incidente, reduciendo el alert noise y permitiendo identificar la causa raíz más rápidamente','Es la sincronización de datos entre Zabbix y el CMDB para mantener el inventario actualizado'],cor:2},
+  {id:38,cat:'AIOps',q:'¿Qué es la detección de anomalías en el contexto de monitoreo inteligente (AIOps)?',
+   opts:['Es la revisión manual de logs que realiza el analista senior al inicio de cada turno','Es la capacidad de identificar automáticamente comportamientos que se desvían del baseline normal de un sistema, sin necesidad de umbrales fijos predefinidos, usando algoritmos de machine learning','Es la detección de errores ortográficos en los tickets de incidente del ITSM','Es la herramienta que identifica usuarios que acceden al sistema fuera del horario laboral'],cor:1},
+  {id:39,cat:'AIOps',q:'¿Cuál es la diferencia fundamental entre un NOC Reactivo y un NOC Proactivo?',
+   opts:['El NOC Reactivo trabaja en turnos de 12 horas; el Proactivo en turnos de 8 horas','El NOC Proactivo solo atiende incidentes P1 y P2; el Reactivo atiende todos los niveles','No existe diferencia real; ambos modelos producen los mismos resultados de disponibilidad','El NOC Reactivo actúa después de que ocurre un fallo; el NOC Proactivo anticipa y previene fallos usando análisis de tendencias, detección de anomalías y automatización, reduciendo impactos al negocio'],cor:3},
+  {id:40,cat:'AIOps',q:'¿Qué es el "noise reduction" en AIOps y cuál es su impacto en el NOC?',
+   opts:['Es la reducción de ruido ambiental en la sala del NOC para mejorar la concentración de los analistas','Es la compresión de archivos de log para reducir el espacio de almacenamiento necesario','Es la capacidad de filtrar, suprimir y correlacionar alertas irrelevantes o duplicadas de forma automatizada, permitiendo que el NOC se enfoque únicamente en los eventos que requieren acción real','Es la reducción de licencias de monitoreo innecesarias para optimizar el presupuesto de TI'],cor:2}
+];
+
+/* ── Distribución proporcional: 20 preguntas de 7 categorías ── */
+const DIST = {ITIL:4, Monitoreo:4, Redes:3, Incidentes:3, Automatización:2, Seguridad:2, AIOps:2};
+
+/* ── Estado del examen ── */
+let exam = {
+  nombre:'', puesto:'', folio:'', startTs:null,
+  qs:[], answers:[], current:0, timer:null, elapsed:0
+};
+
+/* ════════════════════════════════════════
+   UTILIDADES
+════════════════════════════════════════ */
+function fisherYates(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function buildExam(){
+  const selected=[];
+  const byCategory={};
+  BANK.forEach(q=>{ if(!byCategory[q.cat]) byCategory[q.cat]=[]; byCategory[q.cat].push(q); });
+  Object.keys(DIST).forEach(cat=>{
+    const pool=fisherYates(byCategory[cat]||[]);
+    selected.push(...pool.slice(0,DIST[cat]));
+  });
+  return fisherYates(selected);
+}
+
+function genFolio(){
+  const n=String(Math.floor(Math.random()*9000)+1000);
+  return `TORUS-NOC-2026-${n}`;
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ════════════════════════════════════════
+   SHA-256 (WebCrypto)
+════════════════════════════════════════ */
+async function sha256(str){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ════════════════════════════════════════
+   INICIO DEL EXAMEN
+════════════════════════════════════════ */
+function startExam(){
+  const nombre=document.getElementById('inNombre').value.trim();
+  const puesto=document.getElementById('inPuesto').value;
+  const err=document.getElementById('landErr');
+  if(!nombre){err.textContent='Por favor ingresa tu nombre completo.';err.style.display='block';return;}
+  if(!puesto){err.textContent='Por favor selecciona tu puesto actual.';err.style.display='block';return;}
+  err.style.display='none';
+  exam.nombre=nombre; exam.puesto=puesto;
+  exam.folio=genFolio();
+  exam.startTs=new Date().toISOString();
+  exam.qs=buildExam();
+  exam.answers=new Array(exam.qs.length).fill(null);
+  exam.current=0;
+  exam.elapsed=0;
+  showScreen('scExam');
+  renderQuestion();
+  startTimer();
+}
+
+/* ════════════════════════════════════════
+   TIMER
+════════════════════════════════════════ */
+function startTimer(){
+  const totalSecs=CFG.DURATION_MIN*60;
+  exam.elapsed=0;
+  exam.timer=setInterval(()=>{
+    exam.elapsed++;
+    const remaining=totalSecs-exam.elapsed;
+    if(remaining<=0){clearInterval(exam.timer);submitExam(true);return;}
+    const m=Math.floor(remaining/60), s=remaining%60;
+    const disp=document.getElementById('timerDisplay');
+    disp.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    disp.className='timer'+(remaining<=300?' critical':remaining<=600?' warning':'');
+  },1000);
+}
+
+/* ════════════════════════════════════════
+   RENDER PREGUNTA
+════════════════════════════════════════ */
+function renderQuestion(){
+  const q=exam.qs[exam.current];
+  const total=exam.qs.length;
+  document.getElementById('qCounter').textContent=`${exam.current+1} / ${total}`;
+  document.getElementById('progressFill').style.width=`${((exam.current+1)/total)*100}%`;
+  document.getElementById('qCat').textContent=q.cat;
+  document.getElementById('qText').textContent=q.q;
+  const letters=['A','B','C','D'];
+  const optWrap=document.getElementById('qOptions');
+  optWrap.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const div=document.createElement('div');
+    div.className='q-opt'+(exam.answers[exam.current]===i?' selected':'');
+    div.onclick=()=>selectOption(i);
+    div.innerHTML=`<div class="opt-letter">${letters[i]}</div><div class="opt-text">${o}</div>`;
+    optWrap.appendChild(div);
+  });
+  // dots
+  const dotWrap=document.getElementById('dotNav');
+  dotWrap.innerHTML='';
+  exam.qs.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='dot'+(i===exam.current?' current':exam.answers[i]!==null?' answered':'');
+    d.onclick=()=>{exam.current=i;renderQuestion();};
+    d.title=`Pregunta ${i+1}`;
+    dotWrap.appendChild(d);
+  });
+  document.getElementById('btnPrev').disabled=exam.current===0;
+  const isLast=exam.current===total-1;
+  document.getElementById('btnNext').style.display=isLast?'none':'inline-flex';
+  document.getElementById('btnFinish').style.display=isLast?'inline-flex':'none';
+}
+
+function selectOption(i){
+  exam.answers[exam.current]=i;
+  renderQuestion();
+}
+
+function navQ(dir){
+  const next=exam.current+dir;
+  if(next<0||next>=exam.qs.length)return;
+  exam.current=next;
+  renderQuestion();
+}
+
+/* ════════════════════════════════════════
+   CONFIRMAR Y ENVIAR
+════════════════════════════════════════ */
+function confirmSubmit(){
+  const unanswered=exam.answers.filter(a=>a===null).length;
+  let msg=`¿Estás seguro de que deseas finalizar el examen?\n\nPreguntas contestadas: ${exam.qs.length-unanswered}/${exam.qs.length}`;
+  if(unanswered>0) msg+=`\n\n⚠ Tienes ${unanswered} pregunta(s) sin responder.`;
+  if(confirm(msg)) submitExam(false);
+}
+
+async function submitExam(timeout=false){
+  clearInterval(exam.timer);
+  const tiempoMin=Math.round(exam.elapsed/60*10)/10;
+  /* Calcular score por categoría */
+  const cats={};
+  exam.qs.forEach((q,i)=>{
+    if(!cats[q.cat]) cats[q.cat]={ok:0,total:0};
+    cats[q.cat].total++;
+    if(exam.answers[i]===q.cor) cats[q.cat].ok++;
+  });
+  let totalOk=0;
+  const porCat={};
+  Object.keys(cats).forEach(c=>{
+    const ok=cats[c].ok, tot=cats[c].total;
+    totalOk+=ok;
+    const pct=Math.round(ok/tot*100);
+    porCat[c]={ok,total:tot,pct,gap:pct<60};
+  });
+  const score=Math.round(totalOk/exam.qs.length*10*10)/10;
+  const pct=Math.round(totalOk/exam.qs.length*100);
+  const gaps=Object.keys(porCat).filter(c=>porCat[c].gap);
+  const result={
+    folio:exam.folio, timestamp:new Date().toISOString(),
+    nombre:exam.nombre, puesto:exam.puesto,
+    score, pct_correctas:pct, tiempo_min:tiempoMin,
+    por_categoria:porCat, gaps_detectados:gaps,
+    preguntas_ids:exam.qs.map(q=>q.id),
+    timeout
+  };
+  /* Guardar en localStorage */
+  try{
+    const key='torus_noc_results';
+    const prev=JSON.parse(localStorage.getItem(key)||'[]');
+    prev.push(result);
+    localStorage.setItem(key,JSON.stringify(prev));
+  }catch(e){}
+  /* Mostrar overlay */
+  document.getElementById('overlay').classList.add('active');
+  /* Enviar a Google Sheets */
+  if(CFG.GAS_URL && CFG.GAS_URL!=='PEGAR_URL_APPS_SCRIPT_AQUI'){
+    try{
+      await fetch(CFG.GAS_URL,{
+        method:'POST',
+        headers:{'Content-Type':'text/plain'},
+        body:JSON.stringify(result),
+        mode:'no-cors'
+      });
+    }catch(e){console.warn('GAS error:',e);}
+  }
+  /* Enviar por EmailJS */
+  if(CFG.EMAILJS_PUB_KEY && CFG.EMAILJS_PUB_KEY!=='PEGAR_PUBLIC_KEY_AQUI'){
+    try{
+      await emailjs.init(CFG.EMAILJS_PUB_KEY);
+      await emailjs.send(CFG.EMAILJS_SVC_ID, CFG.EMAILJS_TMPL_ID,{
+        to_email: CFG.RESULT_EMAIL,
+        folio: result.folio,
+        nombre: result.nombre,
+        puesto: result.puesto,
+        score: result.score,
+        pct: result.pct_correctas,
+        tiempo: result.tiempo_min,
+        gaps: result.gaps_detectados.join(', ')||'Ninguno',
+        resultado_json: JSON.stringify(result,null,2)
+      });
+    }catch(e){console.warn('EmailJS error:',e);}
+  }
+  document.getElementById('overlay').classList.remove('active');
+  /* Mostrar pantalla correcta */
+  const folioEl=document.getElementById(timeout?'timeoutFolio':'confirmFolio');
+  folioEl.textContent=exam.folio;
+  showScreen(timeout?'scTimeout':'scConfirm');
+}
+
+/* ════════════════════════════════════════
+   ADMIN PANEL
+════════════════════════════════════════ */
+async function adminLogin(){
+  const pass=document.getElementById('adminPass').value;
+  const hash=await sha256(pass);
+  if(hash===CFG.ADMIN_HASH){
+    document.getElementById('loginErr').style.display='none';
+    showScreen('scAdmin');
+    document.getElementById('hdrBadge').textContent='🔐 Panel Admin';
+    loadAdminResults();
+  }else{
+    document.getElementById('loginErr').style.display='block';
+    document.getElementById('adminPass').value='';
+  }
+}
+
+function adminLogout(){
+  document.getElementById('hdrBadge').textContent='🎯 Assessment NOC Avanzado';
+  showScreen('scLanding');
+}
+
+function loadAdminResults(){
+  let results=[];
+  try{results=JSON.parse(localStorage.getItem('torus_noc_results')||'[]');}catch(e){}
+  const total=results.length;
+  const avg=total?Math.round(results.reduce((s,r)=>s+r.score,0)/total*10)/10:0;
+  const high=results.filter(r=>r.score>=7).length;
+  const low=results.filter(r=>r.score<6).length;
+  document.getElementById('stTotal').textContent=total;
+  document.getElementById('stAvg').textContent=total?avg+'':'—';
+  document.getElementById('stHigh').textContent=high;
+  document.getElementById('stLow').textContent=low;
+  const wrap=document.getElementById('adminTableWrap');
+  if(total===0){wrap.innerHTML='<div class="empty-state">No hay resultados registrados en este navegador.</div>';return;}
+  const cats=['ITIL','Monitoreo','Redes','Incidentes','Automatización','Seguridad','AIOps'];
+  let rows='';
+  [...results].reverse().forEach(r=>{
+    const sc=r.score;
+    const cls=sc>=7?'score-high':sc>=6?'score-mid':'score-low';
+    const gaps=r.gaps_detectados&&r.gaps_detectados.length?r.gaps_detectados.map(g=>`<span class="gap-tag">${g}</span>`).join(''):'<span style="color:#196B24;font-size:.75rem">Sin GAPs</span>';
+    const catCols=cats.map(c=>{
+      const d=r.por_categoria&&r.por_categoria[c];
+      if(!d) return '<td>—</td>';
+      const ico=d.gap?'❌':d.pct<80?'⚠️':'✅';
+      return `<td style="text-align:center;font-size:.78rem">${ico} ${d.pct}%</td>`;
+    }).join('');
+    const ts=r.timestamp?new Date(r.timestamp).toLocaleString('es-MX',{hour12:false}):'—';
+    rows+=`<tr>
+      <td style="font-size:.78rem;color:#777">${ts}</td>
+      <td><strong>${r.nombre||'—'}</strong></td>
+      <td style="font-size:.78rem">${r.puesto||'—'}</td>
+      <td><span class="badge-score ${cls}">${sc}/10</span></td>
+      ${catCols}
+      <td>${gaps}</td>
+      <td style="font-size:.72rem;font-family:monospace;color:#888">${r.folio||'—'}</td>
+    </tr>`;
+  });
+  wrap.innerHTML=`<div style="overflow-x:auto"><table>
+    <thead><tr>
+      <th>Fecha/Hora</th><th>Nombre</th><th>Puesto</th><th>Score</th>
+      ${cats.map(c=>`<th style="text-align:center">${c}</th>`).join('')}
+      <th>GAPs</th><th>Folio</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function refreshAdmin(){loadAdminResults();}
+
+function clearLocal(){
+  if(confirm('¿Eliminar todos los resultados locales? Esta acción no afecta Google Sheets ni los emails enviados.')){
+    localStorage.removeItem('torus_noc_results');
+    loadAdminResults();
+  }
+}
+
+function exportCSV(){
+  let results=[];
+  try{results=JSON.parse(localStorage.getItem('torus_noc_results')||'[]');}catch(e){}
+  if(!results.length){alert('No hay datos para exportar.');return;}
+  const cats=['ITIL','Monitoreo','Redes','Incidentes','Automatización','Seguridad','AIOps'];
+  const head=['Folio','Fecha','Nombre','Puesto','Score','% Correctas','Tiempo(min)','Timeout',...cats.map(c=>c+'_pct'),...cats.map(c=>c+'_gap'),'GAPs_detectados'];
+  const rows=results.map(r=>[
+    r.folio, r.timestamp, r.nombre, r.puesto, r.score, r.pct_correctas, r.tiempo_min, r.timeout?'SI':'NO',
+    ...cats.map(c=>r.por_categoria&&r.por_categoria[c]?r.por_categoria[c].pct:''),
+    ...cats.map(c=>r.por_categoria&&r.por_categoria[c]?r.por_categoria[c].gap?'GAP':'OK':''),
+    (r.gaps_detectados||[]).join('|')
+  ]);
+  const csv=[head,...rows].map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`TORUS_NOC_Assessment_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+/* ════════════════════════════════════════
+   INIT — detectar modo admin por URL hash
+════════════════════════════════════════ */
+(function init(){
+  if(window.location.hash==='#admin'){
+    showScreen('scAdminLogin');
+    document.getElementById('hdrBadge').textContent='🔐 Panel Admin';
+  }
+  window.addEventListener('hashchange',()=>{
+    if(window.location.hash==='#admin') showScreen('scAdminLogin');
+  });
+})();
+</script>
+
+<!-- EmailJS SDK (carga solo cuando se configura) -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" async></script>
+
+</body>
+</html>
